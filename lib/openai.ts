@@ -31,21 +31,27 @@ export async function parseUserQuery(query: string): Promise<ParsedQuery> {
 Return a JSON object with these fields:
 - "show": The TV show name (expand abbreviations like GOT to "Game of Thrones", BB to "Breaking Bad")
 - "type": One of "before", "single", "range", or "season"
-  - "before": User wants recap of everything BEFORE a specific episode (e.g., "I'm on S3E5" means recap S1E1 through S3E4)
-  - "single": User wants recap of just ONE specific episode
+  - "before": DEFAULT - User wants recap of everything BEFORE a specific episode. Use this for most queries mentioning an episode.
+  - "single": ONLY use when user explicitly asks "what happened IN episode X" or "recap OF episode X" (specific single episode content)
   - "range": User wants recap of a range of episodes (e.g., "episodes 5-10")
-  - "season": User wants recap of an entire season
+  - "season": User wants recap of an entire season (e.g., "what happened in season 2")
 - "season": The season number (default to 1 if not specified)
 - "episode": The episode number (required for "before", "single", and "range" types)
 - "endSeason": End season for ranges that span seasons (optional)
 - "endEpisode": End episode for range type (required for "range")
 
+IMPORTANT: Default to "before" when someone mentions they are at/on an episode, or just states a show and episode.
+The most common use case is "I'm on episode X" meaning "catch me up on everything before X".
+
 Examples:
 - "I'm on season 3 episode 5 of Game of Thrones" → {"show":"Game of Thrones","type":"before","season":3,"episode":5}
-- "recap GOT s2e3" → {"show":"Game of Thrones","type":"single","season":2,"episode":3}
+- "season 2 episode 3 money heist" → {"show":"Money Heist","type":"before","season":2,"episode":3}
+- "Breaking Bad s3e2" → {"show":"Breaking Bad","type":"before","season":3,"episode":2}
+- "GOT s2e5" → {"show":"Game of Thrones","type":"before","season":2,"episode":5}
+- "what happened IN episode 5 of stranger things" → {"show":"Stranger Things","type":"single","season":1,"episode":5}
+- "recap OF just episode 3" → {"show":"...","type":"single","season":1,"episode":3}
 - "what happened in season 2 of breaking bad" → {"show":"Breaking Bad","type":"season","season":2}
 - "recap episodes 5-10 of stranger things season 1" → {"show":"Stranger Things","type":"range","season":1,"episode":5,"endEpisode":10}
-- "I forgot what happened before episode 8 of The Office" → {"show":"The Office","type":"before","season":1,"episode":8}
 
 Common abbreviations:
 - GOT = Game of Thrones
@@ -53,7 +59,8 @@ Common abbreviations:
 - BCS = Better Call Saul
 - HIMYM = How I Met Your Mother
 - TBBT = The Big Bang Theory
-- TWD = The Walking Dead`,
+- TWD = The Walking Dead
+- HOTD = House of the Dragon`,
       },
       {
         role: "user",
